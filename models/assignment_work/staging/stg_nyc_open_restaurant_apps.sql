@@ -57,14 +57,14 @@ cleaned AS (
        CAST(legal_business_name AS STRING) AS legal_business_name,
        CAST(doing_business_as_dba AS STRING) AS doing_business_as,
        CAST(bulding_number AS STRING) AS building_number,
-       CAST(business_address AS STRING))) AS full_address,
+       CAST(business_address AS STRING) AS full_address,
 
        -- Location - clean zip code, handling several common zip code data problems
        CASE
            WHEN UPPER(TRIM(CAST(zip AS STRING))) IN ('N/A', 'NA') THEN NULL
            WHEN UPPER(TRIM(CAST(zip AS STRING))) = 'ANONYMOUS' THEN 'Anonymous'
-           WHEN LENGTH(CAST(zip AS STRING)) = 5 THEN CAST(incident_zip AS STRING)
-           WHEN LENGTH(CAST(zip AS STRING)) = 9 THEN CAST(incident_zip AS STRING)
+           WHEN LENGTH(CAST(zip AS STRING)) = 5 THEN CAST(zip AS STRING)
+           WHEN LENGTH(CAST(zip AS STRING)) = 9 THEN CAST(zip AS STRING)
            WHEN LENGTH(CAST(zip AS STRING)) = 10
                AND REGEXP_CONTAINS(CAST(zip AS STRING), r'^\d{5}-\d{4}')
            THEN CAST(zip AS STRING)
@@ -112,10 +112,10 @@ cleaned AS (
    FROM source
 
    -- Filters
-   WHERE application_id IS NOT NULL
+   WHERE objectid IS NOT NULL
 
    -- Deduplicate
-   QUALIFY ROW_NUMBER() OVER (PARTITION BY application_id ORDER BY time_of_submission DESC) = 1
+   QUALIFY ROW_NUMBER() OVER (PARTITION BY objectid ORDER BY time_of_submission DESC) = 1
 )
 
 SELECT * FROM cleaned
