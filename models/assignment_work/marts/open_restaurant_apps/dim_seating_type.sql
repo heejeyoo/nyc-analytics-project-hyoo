@@ -3,11 +3,11 @@ WITH seating_types AS (
    SELECT DISTINCT
        seating_interest_sidewalk AS seating_interest,
     CASE
-        WHEN seating_interest_sidewalk IN ('sidewalk','both','openstreets') then TRUE
+        WHEN seating_interest IN ('sidewalk','both','openstreets') then TRUE
         ELSE FALSE
     END AS approved_for_sidewalk_seating,
     CASE
-        WHEN seating_interest_sidewalk IN ('roadway','both','openstreets') then TRUE
+        WHEN seating_interest IN ('roadway','both','openstreets') then TRUE
         ELSE FALSE
     END AS approved_for_roadway_seating
 --TODO: Replace this comment with a CASE WHEN .. statement that handles the different possibilities for approved_for_sidewalk_seating and approved_for_roadway_seating in the data
