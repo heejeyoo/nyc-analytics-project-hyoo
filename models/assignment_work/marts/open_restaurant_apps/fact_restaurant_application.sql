@@ -54,7 +54,7 @@
 
           -- Compliance flags -- derived columns to make them booleans
           CASE WHEN r.alcohol_qualified  = "yes" THEN True ELSE False END AS qualify_alcohol,
-          CASE WHEN r.landmark_district_or_building  = "yes" THEN True ELSE False END AS is_landmark_location,
+          CASE WHEN r.landmark_status  = "yes" THEN True ELSE False END AS is_landmark_location,
           CASE WHEN r.healthcompliance_terms = "yes" THEN True ELSE False END AS health_compliance_terms_accepted,
 
           -- Liquor license (more double-checking with type CAST ing, although could also do that in staging table)
