@@ -27,7 +27,7 @@
           {{ dbt_utils.generate_surrogate_key(['r.objectid']) }} AS application_key,
 
           -- Natural key
-          CAST(r.objectid AS STRING) AS objectid,
+          CAST(r.application_id AS STRING) AS objectid,
 
           -- Event timestamp
           CAST(r.time_of_submission AS TIMESTAMP) AS application_submitted,
