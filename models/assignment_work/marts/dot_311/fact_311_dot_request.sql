@@ -99,7 +99,7 @@
 
       LEFT JOIN dim_location l
           ON r.borough = l.borough
-          AND r.zip_code = l.zip_code
+          AND r.incident_zip = l.incident_zip
 
       LEFT JOIN dim_complaint c
           ON r.complaint_type = c.complaint_type
