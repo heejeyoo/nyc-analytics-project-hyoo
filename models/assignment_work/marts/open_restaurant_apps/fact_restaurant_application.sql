@@ -43,7 +43,7 @@
           -- Location details
           CAST(r.full_address AS STRING) AS business_address,
           CAST(r.street AS STRING) AS street,
-          CAST(r.bulding_number AS STRING) AS building_number,
+          CAST(r.building_number AS STRING) AS building_number,
           CAST(r.latitude AS FLOAT64) AS latitude,
           CAST(r.longitude AS FLOAT64) AS longitude,
 
