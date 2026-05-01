@@ -16,7 +16,6 @@ cleaned AS (
            legal_business_name,
            doing_business_as_dba,
            bulding_number,
-           street,
            borough,
            zip,
            business_address,
