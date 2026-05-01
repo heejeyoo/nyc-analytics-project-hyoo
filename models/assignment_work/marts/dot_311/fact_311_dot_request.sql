@@ -85,7 +85,7 @@
 
           -- Additional attributes
           r.status,
-          r.open_data_channel_type AS channel_type,
+          r.method_of_submission AS channel_type,
           r.resolution_description
     
       -- **** INSIDE that, WRITE THIS 4th, join by join:
