@@ -24,7 +24,7 @@
   fact_restaurant_apps AS (
       SELECT
           -- Surrogate key
-          {{ dbt_utils.generate_surrogate_key(['r.objectid']) }} AS application_key,
+          {{ dbt_utils.generate_surrogate_key(['r.application_id']) }} AS application_key,
 
           -- Natural key
           CAST(r.application_id AS STRING) AS objectid,
