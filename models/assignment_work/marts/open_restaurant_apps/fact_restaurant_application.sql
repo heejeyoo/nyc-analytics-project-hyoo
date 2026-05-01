@@ -72,7 +72,7 @@
           AND r.zip = l.zip_code
 
       LEFT JOIN dim_restaurant rest
-          ON r.food_service_establishment = rest.food_service_establishment
+          ON r.food_service_establishment_permit = rest.food_service_establishment
           AND r.business_address = rest.business_address
 
       LEFT JOIN dim_seating_type st
