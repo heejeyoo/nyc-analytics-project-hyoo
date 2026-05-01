@@ -69,7 +69,7 @@
 
       LEFT JOIN dim_location l
           ON r.borough = l.borough
-          AND r.zip_code = l.zip_code
+          AND r.zip = l.zip_code
 
       LEFT JOIN dim_restaurant rest
           ON r.food_service_establishment = rest.food_service_establishment
