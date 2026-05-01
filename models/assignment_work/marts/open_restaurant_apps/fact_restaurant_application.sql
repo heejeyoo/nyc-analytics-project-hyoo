@@ -76,7 +76,7 @@
           AND r.full_address = rest.full_address
 
       LEFT JOIN dim_seating_type st
-          ON r.seating_interest_sidewalk = st.seating_interest
+          ON r.seating_interest = st.seating_interest
           AND (CASE WHEN r.approved_for_sidewalk_seating = 'yes' THEN True ELSE False END) = st.approved_for_sidewalk
           AND (CASE WHEN r.approved_for_roadway_seating = 'yes' THEN True ELSE False END) = st.approved_for_roadway
   )
