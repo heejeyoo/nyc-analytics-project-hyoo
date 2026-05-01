@@ -73,7 +73,7 @@
 
       LEFT JOIN dim_restaurant rest
           ON r.food_service_establishment_permit = rest.food_service_establishment_permit
-          AND r.business_address = rest.business_address
+          AND r.full_address = rest.full_address
 
       LEFT JOIN dim_seating_type st
           ON r.seating_interest_sidewalk = st.seating_interest
