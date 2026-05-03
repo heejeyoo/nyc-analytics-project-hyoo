@@ -1,0 +1,82 @@
+version: 2
+
+models:
+  - name: dim_date
+    columns:
+      - name: date_key
+        tests: [unique, not_null]
+
+  - name: dim_location
+    columns:
+      - name: location_key
+        tests: [unique, not_null]
+
+  - name: dim_311_problem
+    columns:
+      - name: problem_key
+        tests: [unique, not_null]
+
+  - name: dim_ace_violation_type
+    columns:
+      - name: violation_type_key
+        tests: [unique, not_null]
+
+  - name: dim_bus_route
+    columns:
+      - name: route_key
+        tests: [unique, not_null]
+
+  - name: dim_bus_stop
+    columns:
+      - name: bus_stop_key
+        tests: [unique, not_null]
+
+  - name: fact_311_complaints
+    columns:
+      - name: unique_key
+        tests: [unique, not_null]
+      - name: date_key
+        tests:
+          - relationships:
+              to: ref('dim_date')
+              field: date_key
+      - name: location_key
+        tests:
+          - relationships:
+              to: ref('dim_location')
+              field: location_key
+      - name: problem_key
+        tests:
+          - relationships:
+              to: ref('dim_311_problem')
+              field: problem_key
+
+  - name: fact_ace_violations
+    columns:
+      - name: violation_id
+        tests: [unique, not_null]
+      - name: violation_date_key
+        tests:
+          - relationships:
+              to: ref('dim_date')
+              field: date_key
+      - name: location_key
+        tests:
+          - relationships:
+              to: ref('dim_location')
+              field: location_key
+      - name: violation_type_key
+        tests:
+          - relationships:
+              to: ref('dim_ace_violation_type')
+              field: violation_type_key
+      - name: route_key
+        tests:
+          - relationships:
+              to: ref('dim_bus_route')
+              field: route_key
+      - name: bus_stop_key
+        tests:
+          - relationships:
+              to: ref('dim_bus_stop')
+              field: bus_stop_key
