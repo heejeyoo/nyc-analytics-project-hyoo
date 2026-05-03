@@ -48,4 +48,4 @@ cleaned AS (
     ) = 1
 )
 
-SELECT * FROM cleaned;
+SELECT * FROM cleaned
