@@ -1,4 +1,4 @@
--- models/staging/stg_mta_ace_violations.sql
+-- models/project_work/staging/stg_mta_ace_violations.sql
 -- Clean and standardize MTA ACE Violations data
 
 WITH source AS (
