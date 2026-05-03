@@ -1,5 +1,5 @@
+-- models/staging/stg_mta_ace_violations.sql
 -- Clean and standardize MTA ACE Violations data
--- Target Table: stg_mta_ace_violations
 
 WITH source AS (
     SELECT * FROM {{ source('raw', 'source_mta_ace_violations') }}
@@ -23,13 +23,13 @@ cleaned AS (
         UPPER(TRIM(stop_name)) AS stop_name,
 
         -- Geographic Coordinates (Violation Location)
-        SAFE_CAST(violation_latitude AS DECIMAL) AS violation_latitude,
-        SAFE_CAST(violation_longitude AS DECIMAL) AS violation_longitude,
+        SAFE_CAST(violation_latitude AS NUMERIC) AS violation_latitude,
+        SAFE_CAST(violation_longitude AS NUMERIC) AS violation_longitude,
         violation_georeference,
 
         -- Geographic Coordinates (Bus Stop Location)
-        SAFE_CAST(bus_stop_latitude AS DECIMAL) AS bus_stop_latitude,
-        SAFE_CAST(bus_stop_longitude AS DECIMAL) AS bus_stop_longitude,
+        SAFE_CAST(bus_stop_latitude AS NUMERIC) AS bus_stop_latitude,
+        SAFE_CAST(bus_stop_longitude AS NUMERIC) AS bus_stop_longitude,
         bus_stop_georeference,
 
         -- Metadata
@@ -38,14 +38,14 @@ cleaned AS (
     FROM source
 
     -- Basic Data Quality Filters
-    WHERE violation_id IS NOT NULL 
+    WHERE violation_id IS NOT NULL
       AND first_occurrence IS NOT NULL
 
     -- Deduplication: Keep the record with the most recent occurrence update
     QUALIFY ROW_NUMBER() OVER (
-        PARTITION BY violation_id 
+        PARTITION BY violation_id
         ORDER BY last_occurrence DESC
     ) = 1
 )
 
-SELECT * FROM cleaned
+SELECT * FROM cleaned;
