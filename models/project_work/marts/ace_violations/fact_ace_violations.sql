@@ -21,10 +21,10 @@ final AS (
         src.last_occurrence_at AS last_occurrence
     FROM src
 
-    LEFT JOIN {{ ref('dim_date') }} d
+    LEFT JOIN {{ ref('dim_date_project') }} d
         ON CAST(src.first_occurrence_at AS DATE) = d.full_date
 
-    LEFT JOIN {{ ref('dim_location') }} l
+    LEFT JOIN {{ ref('dim_location_project') }} l
         ON src.borough_guess = l.borough
        AND l.zip_code IS NULL
        AND l.council_district IS NULL

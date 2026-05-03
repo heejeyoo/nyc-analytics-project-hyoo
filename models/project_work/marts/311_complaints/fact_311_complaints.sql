@@ -18,10 +18,10 @@ final AS (
         src.created_date AS created_timestamp
     FROM src
 
-    LEFT JOIN {{ ref('dim_date') }} d
+    LEFT JOIN {{ ref('dim_date_project') }} d
         ON CAST(src.created_date AS DATE) = d.full_date
 
-    LEFT JOIN {{ ref('dim_location') }} l
+    LEFT JOIN {{ ref('dim_location_project') }} l
         ON src.borough = l.borough
        AND src.incident_zip = l.zip_code
        AND src.city = l.neighborhood
