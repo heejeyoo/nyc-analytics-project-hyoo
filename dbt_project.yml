@@ -38,3 +38,6 @@ models:
       staging:
         +materialized: table
         +schema: nyc_proj2_staging
+      marts:
+        +materialized: table
+        +schema: nyc_proj2_marts
