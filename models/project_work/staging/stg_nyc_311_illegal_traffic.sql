@@ -1,97 +1,91 @@
--- models/staging/stg_nyc_311_illegal_traffic.sql
--- One row per 311 illegal parking service request
+{{ config(materialized='table') }}
 
 WITH source AS (
-    SELECT * FROM {{ source('raw', 'source_nyc_311_traffic') }}
+    SELECT * 
+    FROM {{ source('raw', 'source_nyc_311_traffic') }}
 ),
 
 cleaned AS (
     SELECT
-        -- Keep everything except fields we’re explicitly transforming
-        * EXCEPT (
-            unique_key,
-            created_date,
-            closed_date,
-            agency,
-            agency_name,
-            complaint_type,
-            descriptor,
-            status,
-            incident_zip,
-            borough,
-            incident_address,
-            street_name,
-            cross_street_1,
-            cross_street_2,
-            latitude,
-            longitude,
-            open_data_channel_type
-        ),
-
-        -- Identifiers
+        -- Primary identifier
         CAST(unique_key AS STRING) AS request_id,
 
-        -- Date/Time
+        -- Timestamps
         CAST(created_date AS TIMESTAMP) AS created_date,
         CAST(closed_date AS TIMESTAMP) AS closed_date,
+        CAST(resolution_action_updated_date AS TIMESTAMP) AS resolution_action_updated_date,
 
-        -- Request details
-        CAST(agency AS STRING) AS agency,
-        CAST(agency_name AS STRING) AS agency_name,
-        CAST(complaint_type AS STRING) AS complaint_type,
-        CAST(descriptor AS STRING) AS descriptor,
+        -- Agency / complaint dimensions
+        UPPER(TRIM(CAST(agency AS STRING))) AS agency,
+        TRIM(CAST(agency_name AS STRING)) AS agency_name,
+        TRIM(CAST(complaint_type AS STRING)) AS complaint_type,
+        TRIM(CAST(descriptor AS STRING)) AS descriptor,
+        TRIM(CAST(descriptor_2 AS STRING)) AS descriptor_2,
         UPPER(TRIM(CAST(status AS STRING))) AS status,
 
-        -- Location - clean zip code
+        -- Location dimension candidates
         CASE
-            WHEN UPPER(TRIM(CAST(incident_zip AS STRING))) IN ('N/A', 'NA') THEN NULL
-            WHEN UPPER(TRIM(CAST(incident_zip AS STRING))) = 'ANONYMOUS' THEN 'Anonymous'
-            WHEN LENGTH(CAST(incident_zip AS STRING)) = 5 THEN CAST(incident_zip AS STRING)
-            WHEN LENGTH(CAST(incident_zip AS STRING)) = 9 THEN CAST(incident_zip AS STRING)
-            WHEN LENGTH(CAST(incident_zip AS STRING)) = 10
-                 AND REGEXP_CONTAINS(CAST(incident_zip AS STRING), r'^\d{5}-\d{4}')
-            THEN CAST(incident_zip AS STRING)
+            WHEN UPPER(TRIM(CAST(borough AS STRING))) IN ('MANHATTAN', 'NEW YORK COUNTY') THEN 'Manhattan'
+            WHEN UPPER(TRIM(CAST(borough AS STRING))) IN ('BRONX', 'THE BRONX') THEN 'Bronx'
+            WHEN UPPER(TRIM(CAST(borough AS STRING))) IN ('BROOKLYN', 'KINGS COUNTY') THEN 'Brooklyn'
+            WHEN UPPER(TRIM(CAST(borough AS STRING))) IN ('QUEENS', 'QUEEN', 'QUEENS COUNTY') THEN 'Queens'
+            WHEN UPPER(TRIM(CAST(borough AS STRING))) IN ('STATEN ISLAND', 'RICHMOND COUNTY') THEN 'Staten Island'
+            ELSE NULL
+        END AS borough,
+
+        CASE
+            WHEN incident_zip IS NULL THEN NULL
+            WHEN UPPER(TRIM(CAST(incident_zip AS STRING))) IN ('N/A', 'NA', '') THEN NULL
+            WHEN REGEXP_CONTAINS(TRIM(CAST(incident_zip AS STRING)), r'^\d{5}$') THEN TRIM(CAST(incident_zip AS STRING))
+            WHEN REGEXP_CONTAINS(TRIM(CAST(incident_zip AS STRING)), r'^\d{5}-\d{4}$') THEN TRIM(CAST(incident_zip AS STRING))
             ELSE NULL
         END AS incident_zip,
 
-        -- Borough standardization
-        CASE
-            WHEN UPPER(TRIM(borough)) IN ('MANHATTAN', 'NEW YORK COUNTY') THEN 'Manhattan'
-            WHEN UPPER(TRIM(borough)) IN ('BRONX', 'THE BRONX') THEN 'Bronx'
-            WHEN UPPER(TRIM(borough)) IN ('BROOKLYN', 'KINGS COUNTY') THEN 'Brooklyn'
-            WHEN UPPER(TRIM(borough)) IN ('QUEENS', 'QUEEN', 'QUEENS COUNTY') THEN 'Queens'
-            WHEN UPPER(TRIM(borough)) IN ('STATEN ISLAND', 'RICHMOND COUNTY') THEN 'Staten Island'
-            ELSE 'UNKNOWN or CITYWIDE'
-        END AS borough,
+        TRIM(CAST(city AS STRING)) AS city,
+        SAFE_CAST(council_district AS INT64) AS council_district,
+        TRIM(CAST(community_board AS STRING)) AS community_board,
+        TRIM(CAST(police_precinct AS STRING)) AS police_precinct,
 
-        CAST(incident_address AS STRING) AS incident_address,
-        CAST(street_name AS STRING) AS street_name,
-        CAST(cross_street_1 AS STRING) AS cross_street_1,
-        CAST(cross_street_2 AS STRING) AS cross_street_2,
-        CAST(latitude AS NUMERIC) AS latitude,
-        CAST(longitude AS NUMERIC) AS longitude,
+        -- Address / geography detail
+        TRIM(CAST(incident_address AS STRING)) AS incident_address,
+        TRIM(CAST(street_name AS STRING)) AS street_name,
+        TRIM(CAST(cross_street_1 AS STRING)) AS cross_street_1,
+        TRIM(CAST(cross_street_2 AS STRING)) AS cross_street_2,
+        TRIM(CAST(intersection_street_1 AS STRING)) AS intersection_street_1,
+        TRIM(CAST(intersection_street_2 AS STRING)) AS intersection_street_2,
+        TRIM(CAST(landmark AS STRING)) AS landmark,
+        TRIM(CAST(address_type AS STRING)) AS address_type,
+        TRIM(CAST(location_type AS STRING)) AS location_type,
 
-        -- Clearer column name
-        CAST(open_data_channel_type AS STRING) AS method_of_submission,
+        -- Coordinates
+        SAFE_CAST(latitude AS FLOAT64) AS latitude,
+        SAFE_CAST(longitude AS FLOAT64) AS longitude,
+        SAFE_CAST(x_coordinate_state_plane AS INT64) AS x_coordinate_state_plane,
+        SAFE_CAST(y_coordinate_state_plane AS INT64) AS y_coordinate_state_plane,
+
+        -- Submission / misc
+        TRIM(CAST(open_data_channel_type AS STRING)) AS method_of_submission,
+        TRIM(CAST(resolution_description AS STRING)) AS resolution_description,
+        TRIM(CAST(vehicle_type AS STRING)) AS vehicle_type,
+        SAFE_CAST(bbl AS STRING) AS bbl,
 
         -- Metadata
         CURRENT_TIMESTAMP() AS _stg_loaded_at
 
     FROM source
-
-    -- Filters
-    WHERE complaint_type LIKE '%Illegal Parking%'
-      AND unique_key IS NOT NULL
+    WHERE unique_key IS NOT NULL
       AND created_date IS NOT NULL
-      AND CAST(CAST(created_date AS TIMESTAMP) AS DATE)
-            >= DATE_SUB(CURRENT_DATE(), INTERVAL 7 YEAR)
-      AND borough IS NOT NULL
+      AND complaint_type IS NOT NULL
+      AND UPPER(TRIM(CAST(complaint_type AS STRING))) LIKE '%ILLEGAL PARKING%'
+),
 
-    -- Deduplicate
+deduped AS (
+    SELECT *
+    FROM cleaned
     QUALIFY ROW_NUMBER() OVER (
-        PARTITION BY unique_key
-        ORDER BY created_date DESC
+        PARTITION BY request_id
+        ORDER BY created_date DESC, closed_date DESC
     ) = 1
 )
 
-SELECT * FROM cleaned
+SELECT * FROM deduped
