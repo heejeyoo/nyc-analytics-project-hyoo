@@ -1,12 +1,12 @@
 version: 2
 
 models:
-  - name: dim_date
+  - name: dim_date_project
     columns:
       - name: date_key
         tests: [unique, not_null]
 
-  - name: dim_location
+  - name: dim_location_project
     columns:
       - name: location_key
         tests: [unique, not_null]
@@ -38,12 +38,12 @@ models:
       - name: date_key
         tests:
           - relationships:
-              to: ref('dim_date')
+              to: ref('dim_date_project')
               field: date_key
       - name: location_key
         tests:
           - relationships:
-              to: ref('dim_location')
+              to: ref('dim_location_project')
               field: location_key
       - name: problem_key
         tests:
@@ -58,12 +58,12 @@ models:
       - name: violation_date_key
         tests:
           - relationships:
-              to: ref('dim_date')
+              to: ref('dim_date_project')
               field: date_key
       - name: location_key
         tests:
           - relationships:
-              to: ref('dim_location')
+              to: ref('dim_location_project')
               field: location_key
       - name: violation_type_key
         tests:
