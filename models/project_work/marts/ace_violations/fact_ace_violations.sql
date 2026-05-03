@@ -1,3 +1,5 @@
+-- Grain: one row per violation_id
+-- Note: dimension joins are deduplicated before joining to avoid fanout
 {{ config(materialized='table') }}
 
 WITH src AS (
