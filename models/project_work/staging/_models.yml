@@ -1,44 +1,44 @@
 version: 2
 
 models:
-  - name: stg_311__complaints
-    description: Typed and filtered NYC 311 complaints — curb-relevant types only, valid lat/lon required.
+  - name: stg_311
+    description: Cleaned, type-cast, curb-filtered 311 complaints
     columns:
-      - name: unique_key
+      - name: complaint_id
+        description: Primary key from NYC 311
         tests:
           - not_null
           - unique
-      - name: created_date
-        tests: [not_null]
+      - name: created_at
+        description: Timestamp when the complaint was filed
+        tests:
+          - not_null
+      - name: borough
+        description: Borough where the complaint was filed
+        tests:
+          - not_null
       - name: complaint_type
-        tests: [not_null]
-      - name: latitude
-        tests: [not_null]
-      - name: longitude
-        tests: [not_null]
+        description: Curb-related complaint category
+        tests:
+          - not_null
 
-  - name: stg_mta__ace_violations
-    description: Typed MTA ACE violations with valid lat/lon.
+  - name: stg_ace
+    description: Cleaned, type-cast MTA ACE violations
     columns:
       - name: violation_id
+        description: Primary key from MTA ACE
         tests:
           - not_null
           - unique
+      - name: first_occurrence
+        description: Timestamp the violation was first detected
+        tests:
+          - not_null
       - name: bus_route_id
-        tests: [not_null]
-      - name: violation_latitude
-        tests: [not_null]
-      - name: violation_longitude
-        tests: [not_null]
-
-  - name: stg_mta__segment_speeds
-    description: Typed MTA bus segment speeds with valid endpoint coordinates and observed speed.
-    columns:
-      - name: route_id
-        tests: [not_null]
-      - name: from_stop_id
-        tests: [not_null]
-      - name: to_stop_id
-        tests: [not_null]
-      - name: average_road_speed_mph
-        tests: [not_null]
+        description: Bus route the violation occurred on
+        tests:
+          - not_null
+      - name: borough
+        description: Borough where the violation occurred
+        tests:
+          - not_null

@@ -2,69 +2,13 @@ version: 2
 
 sources:
   - name: nyc_proj2_raw_data
-    description: |
-      Raw API-pulled tables loaded into BigQuery for the CIS 9440 Squeeze Index project.
-      Tables are loaded as-is from NYC Open Data and data.ny.gov; no transformations applied.
     database: heejeyoo-cis9440-sp26
     schema: nyc_proj2_raw_data
-
+    description: >
+      Raw landed copies of the two source datasets, untransformed. Loaded
+      from NYC Open Data (311) and NY State Open Data (MTA ACE).
     tables:
-      - name: source_nyc_311_traffic
-        description: NYC 311 service requests filtered to traffic/curb-relevant complaint types.
-        columns:
-          - name: unique_key
-            description: Natural key for the 311 complaint (NOT unique in raw — deduped in staging).
-            tests:
-              - not_null
-          - name: created_date
-            description: Timestamp when the complaint was filed.
-          - name: complaint_type
-            description: Top-level 311 complaint category.
-          - name: descriptor
-            description: Sub-category detail of the complaint.
-          - name: borough
-            description: NYC borough as reported by 311 (may contain "Unspecified").
-          - name: latitude
-          - name: longitude
-          - name: status
-            description: Open or Closed.
-
-      - name: source_mta_ace_violations
-        description: MTA Bus Automated Camera Enforcement violation events.
-        columns:
-          - name: violation_id
-            description: Natural key for the ACE violation event (NOT unique in raw — deduped in staging).
-            tests:
-              - not_null
-          - name: bus_route_id
-            description: MTA route identifier (e.g., M15+, B44+).
-          - name: stop_id
-            description: GTFS stop_id at or near the violation.
-          - name: violation_latitude
-          - name: violation_longitude
-          - name: violation_status
-            description: Citation outcome — CITATION ISSUED, EXEMPT - OTHER, etc.
-          - name: violation_type
-            description: Class of violation — MOBILE BUS LANE, BUS STOP, DOUBLE PARKED, etc.
-          - name: first_occurrence
-          - name: last_occurrence
-
-      - name: source_MTA_Bus_Route_Segment
-        identifier: source_MTA_Bus_Route_Segment
-        description: |
-          MTA Bus Route Segment Speeds — average bus speeds between timepoints,
-          aggregated by hour-of-day, day-of-week, and month-of-year.
-          Grain: route × segment × direction × hour_of_day × day_of_week × month × year.
-        columns:
-          - name: route_id
-          - name: timepoint_stop_id
-          - name: next_timepoint_stop_id
-          - name: direction
-          - name: hour_of_day
-          - name: day_of_week
-          - name: month
-          - name: year
-          - name: average_road_speed
-          - name: average_travel_time
-          - name: road_distance
-          - name: bus_trip_count
+      - name: raw_311
+        description: NYC 311 service request records (curb-related complaints)
+      - name: raw_ace
+        description: MTA ACE camera violation events
