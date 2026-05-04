@@ -1,0 +1,42 @@
+version: 2
+
+# ──────────────────────────────────────────────────────────────────────
+# 311 COMPLAINTS MART
+# Fact_311_Complaints + its mart-specific dimension (Dim_311_Problem).
+# Joins to the shared conformed dimensions (Dim_Date, Dim_Location).
+# ──────────────────────────────────────────────────────────────────────
+
+models:
+
+  - name: dim_311_problem
+    description: 311 complaint classification (agency, type, detail)
+    columns:
+      - name: problem_key
+        tests:
+          - not_null
+          - unique
+
+  - name: fact_311_complaints
+    description: One row per curb-related 311 complaint
+    columns:
+      - name: unique_key
+        description: Primary key from NYC 311
+        tests:
+          - not_null
+          - unique
+      - name: date_key
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_date')
+              field: date_key
+      - name: location_key
+        tests:
+          - relationships:
+              to: ref('dim_location')
+              field: location_key
+      - name: problem_key
+        tests:
+          - relationships:
+              to: ref('dim_311_problem')
+              field: problem_key

@@ -1,0 +1,40 @@
+version: 2
+
+# ──────────────────────────────────────────────────────────────────────
+# SHARED CONFORMED DIMENSIONS
+# Used by both Fact_311_Complaints and Fact_ACE_Violations.
+# ──────────────────────────────────────────────────────────────────────
+
+models:
+
+  - name: dim_date
+    description: >
+      Conformed date/time dimension at hour grain. Generated for
+      2024-01-01 through 2026-12-31. date_key is YYYYMMDDHH integer.
+    columns:
+      - name: date_key
+        description: Integer in YYYYMMDDHH form (e.g. 2025031408)
+        tests:
+          - not_null
+          - unique
+      - name: full_datetime
+        tests:
+          - not_null
+      - name: peak_period
+        tests:
+          - accepted_values:
+              values: ['AM_PEAK', 'MIDDAY', 'PM_PEAK', 'EVENING', 'OVERNIGHT']
+
+  - name: dim_location
+    description: >
+      Conformed location dimension at borough / zip / neighborhood /
+      council_district grain. Built from the union of locations
+      appearing in either staging source.
+    columns:
+      - name: location_key
+        tests:
+          - not_null
+          - unique
+      - name: borough
+        tests:
+          - not_null
