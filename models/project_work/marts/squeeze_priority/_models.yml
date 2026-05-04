@@ -1,0 +1,39 @@
+version: 2
+
+models:
+  - name: mart_conflict_adjusted_speed_loss
+    description: KPI #5 — diagnostic mart correlating conflict density with speed deficit at the same location.
+    columns:
+      - name: location_key
+        tests: [not_null]
+
+  - name: mart_squeeze_index
+    description: KPI #7 — composite Squeeze Index per location. Headline mart.
+    columns:
+      - name: location_key
+        tests: [not_null, unique]
+      - name: squeeze_index
+        tests: [not_null]
+
+  - name: mart_top_pilot_candidates
+    description: KPI #8 — top 25 Dynamic Curb Management pilot candidates with component breakdown. Final deliverable.
+    columns:
+      - name: rank
+        tests: [not_null, unique]
+      - name: location_key
+        tests: [not_null]
+
+  - name: mart_conflict_density_by_h3_day
+    description: KPI #4 — daily curb-conflict density per grid cell.
+
+  - name: mart_enforcement_gap_by_segment_month
+    description: KPI #6 — monthly enforcement gap (311/ACE) per location.
+
+  - name: mart_speed_deficit_by_segment_hour
+    description: KPI #1 — hourly bus speed deficit vs. free-flow benchmark.
+
+  - name: mart_peak_penalty_by_segment
+    description: KPI #2 — peak vs off-peak speed penalty per segment.
+
+  - name: mart_ridership_weighted_delay
+    description: KPI #3 — ridership-weighted delay minutes per segment × hour.
