@@ -1,0 +1,112 @@
+version: 2
+
+models:
+  # ---------------- Dimensions ----------------
+  - name: dim_date
+    description: Conformed date dimension (day grain) covering all observed event dates.
+    columns:
+      - name: date_key
+        tests: [not_null, unique]
+      - name: full_date
+        tests: [not_null, unique]
+
+  - name: dim_time
+    description: Conformed hour-of-day dimension. 24 rows.
+    columns:
+      - name: time_key
+        tests: [not_null, unique]
+      - name: peak_period
+        tests:
+          - accepted_values:
+              values: ['AM_PEAK', 'PM_PEAK', 'MIDDAY', 'EVENING', 'OVERNIGHT']
+
+  - name: dim_location
+    description: Conformed spatial dimension keyed on grid_cell_id (~150m grid bucket).
+    columns:
+      - name: location_key
+        tests: [not_null, unique]
+      - name: grid_cell_id
+        tests: [not_null, unique]
+
+  - name: dim_bus_route
+    description: Bus route dimension with ACE camera coverage flag.
+    columns:
+      - name: route_key
+        tests: [not_null, unique]
+      - name: bus_route_id
+        tests: [not_null, unique]
+
+  - name: dim_bus_stop
+    description: Bus stop dimension; union of ACE-observed and Segment-endpoint stops.
+    columns:
+      - name: bus_stop_key
+        tests: [not_null, unique]
+      - name: stop_id
+        tests: [not_null, unique]
+
+  - name: dim_311_problem
+    description: 311 complaint classification with curated problem_category bucket.
+    columns:
+      - name: problem_key
+        tests: [not_null, unique]
+
+  - name: dim_ace_violation_type
+    description: ACE violation class (Bus Stop / Bus Lane / Double Parked).
+    columns:
+      - name: violation_type_key
+        tests: [not_null, unique]
+
+  - name: dim_ace_status
+    description: Junk dimension for ACE outcome flags (citation issued, rejection reason).
+    columns:
+      - name: ace_status_key
+        tests: [not_null, unique]
+
+  # ---------------- Facts ----------------
+  - name: fact_311_complaints
+    description: Curb-relevant 311 complaints, one row per complaint event.
+    columns:
+      - name: complaint_key
+        tests: [not_null, unique]
+      - name: date_key
+        tests:
+          - relationships: { to: ref('dim_date'),     field: date_key }
+      - name: location_key
+        tests:
+          - relationships: { to: ref('dim_location'), field: location_key }
+      - name: problem_key
+        tests:
+          - relationships: { to: ref('dim_311_problem'), field: problem_key }
+
+  - name: fact_ace_violations
+    description: MTA ACE violation events.
+    columns:
+      - name: violation_key
+        tests: [not_null, unique]
+      - name: date_key
+        tests:
+          - relationships: { to: ref('dim_date'),     field: date_key }
+      - name: location_key
+        tests:
+          - relationships: { to: ref('dim_location'), field: location_key }
+      - name: route_key
+        tests:
+          - relationships: { to: ref('dim_bus_route'), field: route_key }
+      - name: violation_type_key
+        tests:
+          - relationships: { to: ref('dim_ace_violation_type'), field: violation_type_key }
+
+  - name: fact_bus_segment_performance
+    description: MTA bus segment speed observations.
+    columns:
+      - name: segment_perf_key
+        tests: [not_null, unique]
+      - name: date_key
+        tests:
+          - relationships: { to: ref('dim_date'),       field: date_key }
+      - name: location_key
+        tests:
+          - relationships: { to: ref('dim_location'),   field: location_key }
+      - name: route_key
+        tests:
+          - relationships: { to: ref('dim_bus_route'),  field: route_key }

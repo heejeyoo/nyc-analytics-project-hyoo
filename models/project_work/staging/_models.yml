@@ -1,0 +1,44 @@
+version: 2
+
+models:
+  - name: stg_311__complaints
+    description: Typed and filtered NYC 311 complaints — curb-relevant types only, valid lat/lon required.
+    columns:
+      - name: unique_key
+        tests:
+          - not_null
+          - unique
+      - name: created_date
+        tests: [not_null]
+      - name: complaint_type
+        tests: [not_null]
+      - name: latitude
+        tests: [not_null]
+      - name: longitude
+        tests: [not_null]
+
+  - name: stg_mta__ace_violations
+    description: Typed MTA ACE violations with valid lat/lon.
+    columns:
+      - name: violation_id
+        tests:
+          - not_null
+          - unique
+      - name: bus_route_id
+        tests: [not_null]
+      - name: violation_latitude
+        tests: [not_null]
+      - name: violation_longitude
+        tests: [not_null]
+
+  - name: stg_mta__segment_speeds
+    description: Typed MTA bus segment speeds with valid endpoint coordinates and observed speed.
+    columns:
+      - name: route_id
+        tests: [not_null]
+      - name: from_stop_id
+        tests: [not_null]
+      - name: to_stop_id
+        tests: [not_null]
+      - name: average_road_speed_mph
+        tests: [not_null]

@@ -2,6 +2,7 @@ name: nyc_analytics
 version: 1.0.0
 config-version: 2
 profile: default
+
 model-paths:
   - models
 analysis-paths:
@@ -14,13 +15,43 @@ macro-paths:
   - macros
 snapshot-paths:
   - snapshots
+
 target-path: target
 clean-targets:
   - target
   - dbt_packages
+
+# ---------------------------------------------------------------
+# Project-wide variables for the Squeeze Index marts.
+# Override at runtime with: dbt run --vars '{"weight_conflict": 0.5}'
+# ---------------------------------------------------------------
+vars:
+  # Spatial grid (ST_SNAPTOGRID, native BigQuery — no UDFs needed)
+  grid_size_deg: 0.0015          # ~150m at NYC latitude
+
+  # Peak-hour windows (end is exclusive)
+  am_peak_start: 7
+  am_peak_end: 10                # covers 7,8,9
+  pm_peak_start: 16
+  pm_peak_end: 20                # covers 16,17,18,19
+
+  # Squeeze Index weights (must sum to 1.0)
+  weight_peak_penalty: 0.4
+  weight_conflict:     0.4
+  weight_ridership:    0.2
+
+  # Curb-relevant 311 complaint types
+  curb_311_complaint_types:
+    - 'Illegal Parking'
+    - 'Blocked Driveway'
+    - 'Derelict Vehicles'
+    - 'Traffic'
+
 models:
   nyc_analytics:
     +materialized: table
+
+    # ---------------- Existing assignment work (unchanged) ----------------
     assignment_work:
       staging:
         +materialized: table
@@ -34,10 +65,33 @@ models:
           +materialized: table
         dot_311:
           +materialized: table
+
+    # ---------------- Squeeze Index project ----------------
     project_work:
       staging:
-        +materialized: table
+        +materialized: view              # staging as views = cheap, always fresh
         +schema: nyc_proj2_staging
+      intermediate:
+        +materialized: table
+        +schema: nyc_proj2_intermediate
       marts:
         +materialized: table
         +schema: nyc_proj2_marts
+        core:
+          +materialized: table
+          +schema: nyc_proj2_marts_core
+        curb_conflict:
+          +materialized: table
+          +schema: nyc_proj2_marts_curb_conflict
+        transit_performance:
+          +materialized: table
+          +schema: nyc_proj2_marts_transit_performance
+        squeeze_priority:
+          +materialized: table
+          +schema: nyc_proj2_marts_squeeze_priority
+
+seeds:
+  nyc_analytics:
+    +quote_columns: false
+    project_work:
+      +schema: nyc_proj2_seeds
