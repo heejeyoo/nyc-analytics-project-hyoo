@@ -1,0 +1,77 @@
+version: 2
+
+# ──────────────────────────────────────────────────────────────────────
+# ACE VIOLATIONS MART
+# Fact_ACE_Violations + its mart-specific dimensions
+# (Dim_ACE_Violation_Type, Dim_Bus_Route, Dim_Bus_stop).
+# Joins to the shared conformed dimensions (Dim_Date, Dim_Location).
+# ──────────────────────────────────────────────────────────────────────
+
+models:
+
+  - name: dim_ace_violation_type
+    description: ACE violation classification (category, status)
+    columns:
+      - name: violation_type_key
+        tests:
+          - not_null
+          - unique
+
+  - name: dim_bus_route
+    description: Bus routes appearing in ACE data
+    columns:
+      - name: route_key
+        tests:
+          - not_null
+          - unique
+      - name: bus_route_id
+        tests:
+          - not_null
+          - unique
+
+  - name: dim_bus_stop
+    description: Bus stops appearing in ACE data
+    columns:
+      - name: bus_stop_key
+        tests:
+          - not_null
+          - unique
+      - name: stop_id
+        tests:
+          - not_null
+          - unique
+
+  - name: fact_ace_violations
+    description: One row per ACE camera violation event
+    columns:
+      - name: violation_id
+        description: Primary key from MTA ACE
+        tests:
+          - not_null
+          - unique
+      - name: date_key
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_date')
+              field: date_key
+      - name: location_key
+        tests:
+          - relationships:
+              to: ref('dim_location')
+              field: location_key
+      - name: violation_type_key
+        tests:
+          - relationships:
+              to: ref('dim_ace_violation_type')
+              field: violation_type_key
+      - name: route_key
+        tests:
+          - relationships:
+              to: ref('dim_bus_route')
+              field: route_key
+      - name: bus_stop_key
+        tests:
+          - relationships:
+              to: ref('dim_bus_stop')
+              field: bus_stop_key
