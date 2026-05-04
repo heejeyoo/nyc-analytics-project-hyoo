@@ -7,13 +7,17 @@ with ace_routes as (
     select distinct
         bus_route_id as route_id
     from {{ ref('int_ace__with_geo') }}
+    where bus_route_id is not null
+      and trim(bus_route_id) != ''
 ),
 
 seg_routes as (
-    select distinct
+    select
         route_id,
         any_value(route_type) as route_type
     from {{ ref('int_segment__with_geo') }}
+    where route_id is not null
+      and trim(route_id) != ''
     group by route_id
 ),
 
@@ -26,7 +30,7 @@ unioned as (
 enriched as (
     select
         u.route_id                                          as bus_route_id,
-        seg.route_type                                      as route_type,                        -- Local | SBS | Limited | Express
+        seg.route_type                                      as route_type,
         case when ace.route_id is not null then true else false end as has_ace_camera,
         {{ borough_from_route_prefix('u.route_id') }}       as primary_borough_from_prefix,
         case
@@ -40,3 +44,4 @@ enriched as (
 )
 
 select * from enriched
+where bus_route_id is not null
