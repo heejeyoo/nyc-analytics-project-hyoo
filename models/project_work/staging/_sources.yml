@@ -8,7 +8,7 @@ sources:
       Raw landed copies of the two source datasets, untransformed. Loaded
       from NYC Open Data (311) and NY State Open Data (MTA ACE).
     tables:
-      - name: raw_311
+      - name: source_nyc_311_traffic
         description: NYC 311 service request records (curb-related complaints)
-      - name: raw_ace
+      - name: source_mta_ace_violations
         description: MTA ACE camera violation events
