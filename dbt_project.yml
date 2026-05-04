@@ -21,45 +21,7 @@ clean-targets:
   - target
   - dbt_packages
 
-# All the `vars:` block below is now UNUSED by the active models
-# (the v2 submission has no macros and no vars). Safe to leave for
-# reference, or delete after the deadline.
-vars:
-  grid_size_deg: 0.0015
-  am_peak_start: 7
-  am_peak_end: 10
-  pm_peak_start: 16
-  pm_peak_end: 20
-  weight_peak_penalty: 0.4
-  weight_conflict:     0.4
-  weight_ridership:    0.2
-  curb_311_complaint_types:
-    - 'Illegal Parking'
-    - 'Blocked Driveway'
-    - 'Derelict Vehicles'
-    - 'Traffic'
-
 models:
-  nyc_analytics:
-    +materialized: table
-
-    # ---------------- Existing assignment work (unchanged) ----------------
-    assignment_work:
-      staging:
-        +materialized: table
-        +schema: nyc_transit_restaurants_staging
-      marts:
-        +materialized: table
-        +schema: nyc_transit_restaurants_marts
-        shared:
-          +materialized: table
-        open_restaurant_apps:
-          +materialized: table
-        dot_311:
-          +materialized: table
-
-    # ---------------- v3 Squeeze Index (DISABLED — kept for reference) ----------------
-    models:
   nyc_analytics:
     +materialized: table
 
@@ -87,17 +49,8 @@ models:
         +materialized: table
         +schema: nyc_proj2_marts_core
         shared:
-          +schema: nyc_proj2_marts_core         # conformed dims
+          +schema: nyc_proj2_marts_core
         complaints_311:
-          +schema: nyc_proj2_marts_core         # 311 mart
+          +schema: nyc_proj2_marts_core
         ace_violations:
-          +schema: nyc_proj2_marts_core         # ACE mart
-
-    # ---------------- v2 Squeeze Index (ACTIVE — this is the submission) ----------------
-    squeeze_index:
-      staging:
-        +materialized: view
-        +schema: nyc_proj2_staging
-      core:
-        +materialized: table
-        +schema: nyc_proj2_marts_core
+          +schema: nyc_proj2_marts_core
