@@ -5,14 +5,12 @@
 -- so every fact row resolves to a Dim_Location row.
 --
 -- Borough is inferred per-cell using majority vote across observations.
--- (NYC borough shapefile reverse-geocoding can be added later as a seed;
---  for now we use the boroughs the source data already provide.)
 
 with cells_311 as (
     select
         grid_cell_id,
-        any_value(grid_lat)                                 as grid_lat,
-        any_value(grid_lon)                                 as grid_lon,
+        grid_lat,
+        grid_lon,
         upper(borough_reported)                             as borough_observed,
         zip_reported                                        as zip_observed,
         cast(council_district_reported as string)           as council_observed
@@ -23,8 +21,8 @@ with cells_311 as (
 cells_ace as (
     select
         grid_cell_id,
-        any_value(grid_lat)                                 as grid_lat,
-        any_value(grid_lon)                                 as grid_lon,
+        grid_lat,
+        grid_lon,
         upper(borough_from_route)                           as borough_observed,
         cast(null as string)                                as zip_observed,
         cast(null as string)                                as council_observed
@@ -35,8 +33,8 @@ cells_ace as (
 cells_seg as (
     select
         grid_cell_id,
-        any_value(grid_lat)                                 as grid_lat,
-        any_value(grid_lon)                                 as grid_lon,
+        grid_lat,
+        grid_lon,
         upper(borough_reported)                             as borough_observed,
         cast(null as string)                                as zip_observed,
         cast(null as string)                                as council_observed
@@ -79,8 +77,8 @@ zip_winner as (
 cells as (
     select
         grid_cell_id,
-        any_value(grid_lat)             as grid_lat,
-        any_value(grid_lon)             as grid_lon
+        avg(grid_lat)                   as grid_lat,
+        avg(grid_lon)                   as grid_lon
     from unioned
     where grid_cell_id is not null
     group by grid_cell_id
