@@ -5,9 +5,10 @@
 -- ----------------------------------------------------------------------------
 -- Conformed date/time dimension. Shared by both fact tables.
 --
--- Built by generating one row per HOUR over a 3-year window (2024-01-01
+-- Built by generating one row per HOUR over an 8-year window (2019-01-01
 -- through 2026-12-31). Grain is hour because peak-hour analysis is one of
--- our headline questions.
+-- our headline questions. The window is sized to comfortably cover the
+-- actual date ranges in both source tables (311: 2020-2026, ACE: 2019-2026).
 --
 -- date_key is an integer in YYYYMMDDHH form (e.g. 2025031408 = March 14,
 -- 2025 at 8 AM). Easy to read, easy to join, no surrogate key generation
@@ -19,11 +20,11 @@ with hours as (
     -- generate one timestamp per hour across the analysis window
     select
         timestamp_add(
-            timestamp('2024-01-01 00:00:00'),
+            timestamp('2019-01-01 00:00:00'),
             interval n hour
         ) as full_datetime
     from unnest(
-        generate_array(0, 24 * 365 * 3)   -- 3 years of hours
+        generate_array(0, 24 * 365 * 8)   -- 8 years of hours
     ) as n
 
 )

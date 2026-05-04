@@ -95,6 +95,20 @@ filtered as (
       and first_occurrence is not null
       and bus_route_id     is not null
 
+),
+
+deduplicated as (
+
+    -- Raw ACE exports occasionally republish the same violation_id across
+    -- daily snapshots. Keep the most recent version (latest last_occurrence)
+    -- so the PK is truly unique.
+    select *
+    from filtered
+    qualify row_number() over (
+        partition by violation_id
+        order by coalesce(last_occurrence, first_occurrence) desc
+    ) = 1
+
 )
 
-select * from filtered
+select * from deduplicated

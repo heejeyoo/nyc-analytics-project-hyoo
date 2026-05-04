@@ -71,6 +71,20 @@ filtered as (
             'Posted Parking Sign Violation'
       )
 
+),
+
+deduplicated as (
+
+    -- Raw 311 exports occasionally republish the same complaint across
+    -- daily snapshots. Keep the most recent version of each complaint_id
+    -- so the PK is truly unique.
+    select *
+    from filtered
+    qualify row_number() over (
+        partition by complaint_id
+        order by coalesce(closed_at, created_at) desc
+    ) = 1
+
 )
 
-select * from filtered
+select * from deduplicated
