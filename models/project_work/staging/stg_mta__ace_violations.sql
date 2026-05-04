@@ -1,7 +1,8 @@
 {{ config(materialized='view') }}
 
--- Staging: MTA Bus Automated Camera Enforcement violations.
--- 1:1 with raw source except for typing and renaming.
+-- Staging: MTA ACE violations.
+-- Deduped to one row per violation_id (most recent last_occurrence wins).
+-- Rows with NULL bus_route_id are dropped — they cannot join to Dim_Bus_Route.
 
 with src as (
     select * from {{ source('nyc_proj2_raw_data', 'source_mta_ace_violations') }}
@@ -23,9 +24,21 @@ typed as (
         safe_cast(bus_stop_longitude  as float64)                               as bus_stop_longitude,
         cast(vehicle_id as string)                                              as vehicle_id
     from src
+),
+
+filtered as (
+    select *
+    from typed
+    where violation_latitude  is not null
+      and violation_longitude is not null
+      and violation_id        is not null
+      and bus_route_id        is not null
+      and trim(bus_route_id) != ''
 )
 
 select *
-from typed
-where violation_latitude  is not null
-  and violation_longitude is not null
+from filtered
+qualify row_number() over (
+    partition by violation_id
+    order by last_occurrence desc, first_occurrence desc
+) = 1

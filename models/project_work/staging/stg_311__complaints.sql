@@ -1,7 +1,7 @@
 {{ config(materialized='view') }}
 
 -- Staging: NYC 311 service requests, restricted to curb-relevant complaint types.
--- 1:1 with the raw source except for typing and renaming.
+-- Deduped to one row per unique_key (most recent created_date wins).
 
 with src as (
     select * from {{ source('nyc_proj2_raw_data', 'source_nyc_311_traffic') }}
@@ -29,10 +29,20 @@ typed as (
         cast(location_type as string)                                           as location_type,
         cast(resolution_description as string)                                  as resolution_description
     from src
+),
+
+filtered as (
+    select *
+    from typed
+    where {{ is_curb_311('complaint_type') }}
+      and latitude  is not null
+      and longitude is not null
+      and unique_key is not null
 )
 
 select *
-from typed
-where {{ is_curb_311('complaint_type') }}
-  and latitude  is not null
-  and longitude is not null
+from filtered
+qualify row_number() over (
+    partition by unique_key
+    order by created_date desc, resolution_updated_date desc
+) = 1

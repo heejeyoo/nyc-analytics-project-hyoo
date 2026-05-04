@@ -13,10 +13,9 @@ sources:
         description: NYC 311 service requests filtered to traffic/curb-relevant complaint types.
         columns:
           - name: unique_key
-            description: Natural key for the 311 complaint.
+            description: Natural key for the 311 complaint (NOT unique in raw — deduped in staging).
             tests:
               - not_null
-              - unique
           - name: created_date
             description: Timestamp when the complaint was filed.
           - name: complaint_type
@@ -34,10 +33,9 @@ sources:
         description: MTA Bus Automated Camera Enforcement violation events.
         columns:
           - name: violation_id
-            description: Natural key for the ACE violation event.
+            description: Natural key for the ACE violation event (NOT unique in raw — deduped in staging).
             tests:
               - not_null
-              - unique
           - name: bus_route_id
             description: MTA route identifier (e.g., M15+, B44+).
           - name: stop_id

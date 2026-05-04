@@ -1,7 +1,7 @@
 {{ config(materialized='view') }}
 
 -- Staging: MTA Bus Route Segment Speeds.
--- Grain: route × segment (timepoint A → timepoint B) × direction × hour_of_day × day_of_week × month × year.
+-- Deduped to one row per (route, from_stop, to_stop, direction, year, month, day_of_week, hour_of_day).
 
 with src as (
     select * from {{ source('nyc_proj2_raw_data', 'source_MTA_Bus_Route_Segment') }}
@@ -36,10 +36,22 @@ typed as (
         safe_cast(road_distance       as float64)                               as road_distance_mi,
         safe_cast(bus_trip_count      as int64)                                 as bus_trip_count
     from src
+),
+
+filtered as (
+    select *
+    from typed
+    where from_stop_latitude is not null and from_stop_longitude is not null
+      and to_stop_latitude   is not null and to_stop_longitude   is not null
+      and average_road_speed_mph is not null
+      and route_id is not null and trim(route_id) != ''
+      and from_stop_id is not null and to_stop_id is not null
 )
 
 select *
-from typed
-where from_stop_latitude is not null and from_stop_longitude is not null
-  and to_stop_latitude   is not null and to_stop_longitude   is not null
-  and average_road_speed_mph is not null
+from filtered
+qualify row_number() over (
+    partition by route_id, from_stop_id, to_stop_id, coalesce(direction,'?'),
+                 year, month, coalesce(day_of_week,'?'), hour_of_day
+    order by observation_timestamp desc, average_road_speed_mph desc
+) = 1
