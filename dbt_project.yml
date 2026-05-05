@@ -47,7 +47,7 @@ models:
         +schema: staging
       marts:
         +materialized: table
-        +schema: marts_core
+        # removed: +schema: marts_core (redundant; subfolders set it)
         shared:
           +schema: marts_core
         complaints_311:
